@@ -3,10 +3,11 @@
 #include <string.h>
 #include <assert.h>
 
-#define MAX_NOM  30
-#define MAX_PARTICIPANT 100
-#define NB_CONCOURS_MAX 20
+//#define MAX_NOM  30
+//#define MAX_PARTICIPANT 100
+//#define NB_CONCOURS_MAX 20
 
+typedef enum {MAX_NOM =30, MAX_PARTICIPANT = 100, NB_CONCOURS_MAX = 20} limite_num;
 typedef struct {
 	char nom[MAX_NOM + 1]; // + 1 pour le \0
 	char prenom[MAX_NOM + 1];
@@ -35,7 +36,7 @@ int nom_connu(const donnee* d, const char* prenom, const char* nom) {
 	}
 	return 0; // pas double
 }
-int creer_connu(donnee* d, const char* monconcours){
+int creer_connu(donnee* d, const char* monconcours) {
 	for (int i = 0; i < d->nb_concours; ++i) {
 		if (strcmp(d->liste_concours[i].nomconcours, monconcours) == 0)
 			return 1;
@@ -44,14 +45,14 @@ int creer_connu(donnee* d, const char* monconcours){
 }
 
 int Participant_inconnu(donnee* d, const int id) {
-		if (id < 1 || id > d->nb_participants)
-			return 1;
-	return 0; 
+	if (id < 1 || id > d->nb_participants)
+		return 1;
+	return 0;
 }
 
 int Concours_inconnu(donnee* d, const int concours) {
-		if (concours < 1 || concours > d->nb_concours)
-			return 1;
+	if (concours < 1 || concours > d->nb_concours)
+		return 1;
 	return 0;
 }
 int Point_strict_pos(donnee* d, int nb_point) {
@@ -72,7 +73,7 @@ void inscrire(donnee* d, const char* prenom, const char* nom) {
 	/*if (d->nb_participants >= MAX_PARTICIPANT) {
 		printf("Inscription impossible\n");
 	}*/
-	else{
+	else {
 		strcpy(d->participants[d->nb_participants].prenom, prenom);
 		strcpy(d->participants[d->nb_participants].nom, nom);
 		for (int i = 0; i < NB_CONCOURS_MAX; i++) {
@@ -88,7 +89,7 @@ void participants(donnee* d) {
 	if (d->nb_participants == 0) {
 		printf("Aucun participant inscrit\n");
 		return;
-	} 
+	}
 	else {
 		for (int i = 0; i < d->nb_participants; ++i) {
 			int nb_concours_actif = 0;
@@ -97,10 +98,10 @@ void participants(donnee* d) {
 				if (d->participants[i].score[j] > 0) //si score est positive on add un concours le lien entre ? score[NB_CONCOURS_MAX];
 					++nb_concours_actif;
 
-		printf("(%d) %s %s : %d concours\n", i + 1,
-			d->participants[i].prenom,
-			d->participants[i].nom,
-			nb_concours_actif);
+			printf("(%d) %s %s : %d concours\n", i + 1,
+				d->participants[i].prenom,
+				d->participants[i].nom,
+				nb_concours_actif);
 		}
 	}
 }
@@ -114,7 +115,7 @@ void creer(donnee* d, const char* nomconcours) {
 		printf("Creation impossible\n");
 		return;
 	}*/
-	else{
+	else {
 		strcpy(d->liste_concours[d->nb_concours].nomconcours, nomconcours);
 		printf("Creation enregistree (%d)\n", ++d->nb_concours);
 	}
@@ -136,7 +137,7 @@ void concours(donnee* d) {
 			printf("(%d) %s : %d participant%s\n",
 				i + 1,
 				d->liste_concours[i].nomconcours,
-				nb_participant_actif, nb_participant_actif > 1? "s": "");
+				nb_participant_actif, nb_participant_actif > 1 ? "s" : "");
 		}
 	}
 }
@@ -189,13 +190,55 @@ void scores(donnee* d, const int id) {
 }
 
 void classement(donnee* d, int id_concours) {
-	if(creer_connu(d, id_concours)){
+	if (Concours_inconnu(d, id_concours)) {
 		printf("Identifiant incorrect\n");
 		return;
 	}
-	int nb_participant = 0;
+	int index = id_concours - 1;
 
-}
+	printf("%s\n", d->liste_concours[index].nomconcours);
+	if (d->nb_participants == 0) {
+		printf("Aucun participant\n");
+		return;
+	}
+	int tab[MAX_PARTICIPANT];
+	int nb = 0;
+	int tmp = 0;
+	// remplissage du tableau avec les indices des participants ayant un score > 0
+			for (int i = 0 ; i < d->nb_participants; ++i) {
+				
+
+				if (d->participants[i].score[index] > 0) {
+					tab[nb] = i;
+					++nb;
+				}
+				
+
+				}
+			//trie du tableau
+			for (int i = 0; i < nb; ++i) {
+				for (int j = i + 1; j < nb - 1; ++j) {
+					if (tab[i] > tab[j])
+						tmp = tab[j];
+					tab[i] = tab[j];
+					tab[j] = tmp;
+				}
+			}
+			// affichage du tableau
+			for (int i = 0; i < nb; ++i) {
+				int score = d->participants[i].score[index];
+				printf("%d -> (%d) %s %s : %d point%s\n",
+					nb,
+					d->nb_participants,
+					d->participants[i].prenom,
+					d->participants[i].nom,
+					score,
+				score > 1 ? "s" : ""
+				);
+			}
+				//positon ensuite id ensuite nom ensuite score			
+		}
+	
 
 int main() {
 
@@ -209,9 +252,9 @@ int main() {
 		scanf("%s", cmd);
 		if (strcmp(cmd, "EXIT") == 0) break;
 		else if (strcmp(cmd, "INSCRIRE") == 0) {
-			char prenom[MAX_NOM + 1], nom[MAX_NOM + 1];
-			scanf("%s %s", prenom, nom);
-			inscrire(&d, prenom, nom);
+			/*char prenom[MAX_NOM + 1], nom[MAX_NOM + 1];*/
+			scanf("%s %s", d.participants->prenom, d.participants->nom);
+			inscrire(&d, d.participants->prenom , d.participants->nom);
 		}
 		else if (strcmp(cmd, "PARTICIPANTS") == 0) {
 			participants(&d);
@@ -228,7 +271,7 @@ int main() {
 			int id;
 			int concours;
 			int nb_point;
-			scanf("%d %d %d",&id, &concours, &nb_point);
+			scanf("%d %d %d", &id, &concours, &nb_point);
 			gain(&d, id, concours, nb_point);
 		}
 		else if (strcmp(cmd, "SCORES") == 0) {
