@@ -150,7 +150,7 @@ void gain(donnee* d, const int id, const int concours, int point) {
 		printf("Concours incorrect\n");
 		return;
 	}
-	if (Point_strict_pos(&d, point)) {
+	if (Point_strict_pos(d, point)) {
 		printf("Points incorrects\n");
 		return;
 	}
@@ -195,49 +195,55 @@ void classement(donnee* d, int id_concours) {
 		return;
 	}
 	int index = id_concours - 1;
-
 	printf("%s\n", d->liste_concours[index].nomconcours);
-	if (d->nb_participants == 0) {
+
+	// indices des participants ayant un score > 0 dans ce concours
+	int tab[MAX_PARTICIPANT];
+	int nb = 0;
+	for (int i = 0; i < d->nb_participants; ++i) {
+		if (d->participants[i].score[index] > 0) {
+			tab[nb] = i;
+			++nb;
+		}
+	}
+	if (nb == 0) {
 		printf("Aucun participant\n");
 		return;
 	}
-	int tab[MAX_PARTICIPANT];
-	int nb = 0;
-	int tmp = 0;
-	// remplissage du tableau avec les indices des participants ayant un score > 0
-			for (int i = 0 ; i < d->nb_participants; ++i) {
-				
 
-				if (d->participants[i].score[index] > 0) {
-					tab[nb] = i;
-					++nb;
-				}
-				
-
-				}
-			//trie du tableau
-			for (int i = 0; i < nb; ++i) {
-				for (int j = i + 1; j < nb - 1; ++j) {
-					if (tab[i] > tab[j])
-						tmp = tab[j];
-					tab[i] = tab[j];
-					tab[j] = tmp;
-				}
+	// tri : score decroissant, puis identifiant croissant
+	for (int i = 0; i < nb - 1; ++i) {
+		for (int j = i + 1; j < nb; ++j) {
+			int si = d->participants[tab[i]].score[index];
+			int sj = d->participants[tab[j]].score[index];
+			if (sj > si || (sj == si && tab[j] < tab[i])) {
+				int tmp = tab[i];
+				tab[i] = tab[j];
+				tab[j] = tmp;
 			}
-			// affichage du tableau
-			for (int i = 0; i < nb; ++i) {
-				int score = d->participants[i].score[index];
-				printf("%d -> (%d) %s %s : %d point%s\n",
-					nb,
-					d->nb_participants,
-					d->participants[i].prenom,
-					d->participants[i].nom,
-					score,
-				score > 1 ? "s" : ""
-				);
-			}
-				//positon ensuite id ensuite nom ensuite score			
 		}
+	}
+
+	// affichage
+	for (int i = 0; i < nb; ++i) {
+		int p = tab[i];
+		int score = d->participants[p].score[index];
+
+		int meme_score = 0;
+		for (int j = 0; j < nb; ++j)
+			if (d->participants[tab[j]].score[index] == score)
+				++meme_score;
+
+		printf("%d%s -> (%d) %s %s : %d point%s\n",
+			rang(d, p, index),
+			meme_score > 1 ? "ex" : "",
+			p + 1,
+			d->participants[p].prenom,
+			d->participants[p].nom,
+			score,
+			score > 1 ? "s" : "");
+	}
+}
 	
 
 int main() {
@@ -252,9 +258,9 @@ int main() {
 		scanf("%s", cmd);
 		if (strcmp(cmd, "EXIT") == 0) break;
 		else if (strcmp(cmd, "INSCRIRE") == 0) {
-			/*char prenom[MAX_NOM + 1], nom[MAX_NOM + 1];*/
-			scanf("%s %s", d.participants->prenom, d.participants->nom);
-			inscrire(&d, d.participants->prenom , d.participants->nom);
+			char prenom[MAX_NOM + 1], nom[MAX_NOM + 1];
+			scanf("%s %s", prenom, nom);
+			inscrire(&d, prenom , nom);
 		}
 		else if (strcmp(cmd, "PARTICIPANTS") == 0) {
 			participants(&d);
