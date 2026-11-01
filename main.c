@@ -62,7 +62,13 @@ int Point_strict_pos(donnee* d, int nb_point) {
 	return 0;
 }
 
-
+int rang(const donnee* d, int p, int c) {
+	int r = 1;
+	for (int i = 0; i < d->nb_participants; ++i)
+		if (d->participants[i].score[c] > d->participants[p].score[c])
+			++r;
+	return r;
+}
 
 // je cree une fonction pour inscrire les participants
 void inscrire(donnee* d, const char* prenom, const char* nom) {
